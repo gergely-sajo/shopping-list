@@ -1,5 +1,6 @@
 let express = require('express')
 let mongodb = require('mongodb')
+let sanitizeHTML = require('sanitize-html')
 
 let app = express()
 let db
@@ -15,7 +16,7 @@ mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: tr
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
-// Password Protection
+// Password Protection {username: username, password: password}
 function passwordProtected(req, res, next) {
   res.set('WWW-Authenticate', 'Basic realm="Shopping List"')
   // console.log(req.headers.authorization) - with this we can type in our desired username and password to the interface in the browser and it will be logged to the console in encoded in base 64 format. 
@@ -73,13 +74,15 @@ app.get('/', function(req, res) {
 })
 
 app.post('/create-item', function(req, res) {
-  db.collection('items').insertOne({text: req.body.text}, function(err, info) {
+  let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}}) // we dont allow HTML tags or attributes, because the array and object is empty in the options
+  db.collection('items').insertOne({text: safeText}, function(err, info) {
     res.json(info.ops[0])
     })
 })
 
 app.post('/update-item', function(req, res) {
-  db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: req.body.text}}, function() {
+  let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}}) // we dont allow HTML tags or attributes, because the array and object is empty in the options
+  db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(safeText)}, {$set: {text: req.body.text}}, function() {
     res.send("Success")
   })
 })
