@@ -15,6 +15,19 @@ mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: tr
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
+// Password Protection
+function passwordProtected(req, res, next) {
+  res.set('WWW-Authenticate', 'Basic realm="Shopping List"')
+  // console.log(req.headers.authorization) - with this we can type in our desired username and password to the interface in the browser and it will be logged to the console in encoded in base 64 format. 
+  if (req.headers.authorization == "Basic dXNlcm5hbWU6cGFzc3dvcmQ=") {
+    next()
+  } else {
+    res.status(401).send("Authentication required")
+  }
+}
+
+app.use(passwordProtected)
+
 app.get('/', function(req, res) {
   db.collection('items').find().toArray(function (err, items) {
     res.send(`
