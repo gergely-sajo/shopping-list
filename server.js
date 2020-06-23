@@ -1,28 +1,21 @@
 let express = require('express')
 let mongodb = require('mongodb')
-let sanitizeHTML = require('sanitize-html')
 
 let app = express()
 let db
-
-
-let port = process.env.PORT
-if (port == null || port == "") {
-    port = 3000
-}
 
 app.use(express.static('public'))
 
 let connectionString = 'mongodb+srv://todoAppUser:DvrvofqVJIDajxUg@cluster0.uwuq3.mongodb.net/TodoApp?retryWrites=true&w=majority'
 mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, client) {
     db = client.db()
-    app.listen(port)
+    app.listen(3000)
 })
 
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
-// Password Protection {username: username, password: password}
+// Password Protection
 function passwordProtected(req, res, next) {
   res.set('WWW-Authenticate', 'Basic realm="Shopping List"')
   // console.log(req.headers.authorization) - with this we can type in our desired username and password to the interface in the browser and it will be logged to the console in encoded in base 64 format. 
@@ -80,15 +73,13 @@ app.get('/', function(req, res) {
 })
 
 app.post('/create-item', function(req, res) {
-  let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}}) // we dont allow HTML tags or attributes, because the array and object is empty in the options
-  db.collection('items').insertOne({text: safeText}, function(err, info) {
+  db.collection('items').insertOne({text: req.body.text}, function(err, info) {
     res.json(info.ops[0])
     })
 })
 
 app.post('/update-item', function(req, res) {
-  let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}}) // we dont allow HTML tags or attributes, because the array and object is empty in the options
-  db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(safeText)}, {$set: {text: req.body.text}}, function() {
+  db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: req.body.text}}, function() {
     res.send("Success")
   })
 })
