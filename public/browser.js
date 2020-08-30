@@ -3,7 +3,6 @@ function itemTemplate(item) {
     <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
       <span class="item-text">${item.text}</span>
       <div>
-        <button data-id="${item._id}" class="btn btn--s btn--in-cart mr-s">In Cart</button>
         <button data-id="${item._id}" class="btn btn--s btn--edit mr-s">Edit</button>
         <button data-id="${item._id}" class="btn btn--s btn--delete">Delete</button>
       </div>
